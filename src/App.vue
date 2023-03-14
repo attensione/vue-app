@@ -16,9 +16,11 @@
       data() {
         return {
             houses: [
-                { id: 1, mount: 'tree', spec: 'bird', price: 1000 },
-                { id: 2, mount: 'ground', spec: 'dog', price: 2000 },
-                { id: 3, mount: 'ground', spec: 'cat', price: 1500 },
+                { id: 1, mount: 'tree', spec: 'bird', price: 250 },
+                { id: 2, mount: 'tree', spec: 'squirrel', price: 350 },
+                { id: 3, mount: 'ground', spec: 'hare', price: 1500 },
+                { id: 4, mount: 'ground', spec: 'hedgehog', price: 200 },
+                { id: 5, mount: 'ground', spec: 'lynx', price: 1600 },
             ],
             mounts: [ 'ground', 'tree' ],
             specs: [ 'dog', 'cat', 'bird' ]
