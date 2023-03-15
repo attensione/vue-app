@@ -24,7 +24,7 @@
         <th scope="row">{{ house.id }}</th>
         <td>{{ house.mount }}</td>
         <td>{{ house.spec }}</td>
-        <td>{{ house.price }} zł</td>
+        <td>{{ this.currencyMath(house.price) }} {{ this.currency }}</td>
       </tr>
     </tbody>
   </table>
@@ -103,10 +103,8 @@
           </div>
           <div class="modal-body">
             <select class="form-select" aria-label="Default select example" @change="changeCurrency">
-                <option value=false disabled selected>Choose Default Currency</option>
-                <option value="zł">zł</option>
-                <option value="eur">euro</option>
-                <option value="dol">dolar</option>
+                <option selected>PLN</option>
+                <option v-for="(item, i) in currencies" :key="i">{{ item.code }}</option>
             </select>
           </div>
           <div class="modal-footer">
@@ -128,7 +126,8 @@ export default {
   props: ['houses', 'mounts', 'specs'],
   data () {
     return {
-       currency: '',
+       currency: 'PLN',
+       currencies: '',
        newHouses: [...this.houses ],
        newMounts: [ ...this.mounts ],
        newSpecs: [ ...this.specs ],
@@ -151,12 +150,12 @@ export default {
     },
     housesSearch(e) {
         if(e.target.value !== '') {
-            const tempRecipes = this.newHouses.filter((item) => {
+            const tempHouses = this.newHouses.filter((item) => {
               return item.spec
                 .toUpperCase()
                 .includes(e.target.value.toUpperCase())
             });
-            this.newHouses = [ ...tempRecipes ];
+            this.newHouses = [ ...tempHouses ];
         }
         else {
             this.newHouses = [ ...this.houses ];
@@ -217,9 +216,33 @@ export default {
             modal.hide();
         }
     },
-    changeCurrency(e) {
-        console.log(e.target.value);
+    async getApiData() {
+        const response = await fetch("http://api.nbp.pl/api/exchangerates/tables/A");
+        const currencies = await response.json();
+        this.currencies = currencies[0].rates;
     },
+    changeCurrency(e) {
+        this.currency = e.target.value;
+        const modal = bootstrap.Modal.getInstance(document.getElementById('changeCurrencyModal'));
+        modal.hide();
+    },
+    currencyMath(val) {
+        if(this.currency === 'PLN') {
+            return val;
+        }
+        else {
+            const tempCurrency = this.currencies.filter((item) => {
+              return item.code
+                .toUpperCase()
+                .includes(this.currency.toUpperCase())
+            });
+            return Math.round((val/tempCurrency[0].mid)*100)/100;
+        }
+
+    },
+  },
+  mounted() {
+    this.getApiData();
   }
 }
 </script>
