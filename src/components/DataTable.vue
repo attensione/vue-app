@@ -39,21 +39,21 @@
         <div class="modal-body text-start">
               <div class="mb-3">
                   <select name="dataMount" id="dataMount" class="form-select" aria-label="Default select example">
-                        <option value=false disabled selected>Choose Data Mount</option>
+                        <option value="false" disabled selected>Choose Data Mount</option>
                       <option v-for="(mount, i) in newMounts" :key="i">{{ mount }}</option>
                   </select>
               </div>
               <div class="mb-3">
                     <select name="dataSpec" id="dataSpec" class="form-select" aria-label="Default select example">
-                        <option value=false disabled selected>Choose Data Spec</option>
+                        <option value="false" disabled selected>Choose Data Spec</option>
                         <option v-for="(spec, i) in newSpecs" :key="i">{{ spec }}</option>
                     </select>
               </div>
               <div class="mb-3">
-                    <input type="text" class="form-control" name="dataPrice" id="dataPrice" placeholder="Data Price">
+                    <input type="text" class="form-control" name="dataPrice" id="dataPrice" placeholder="Data Price" pattern="[0-9]+">
              </div>
              <div class="mb-3">
-                  <div id="dataFeedback" class="form-text alert alert-danger d-none" role="alert">feedback is null</div>
+                  <div id="dataFeedback" class="form-text alert alert-danger d-none" role="alert">{{ this.messageData }}</div>
              </div>
         </div>
         <div class="modal-footer">
@@ -83,7 +83,7 @@
                  <input type="text" class="form-control" name="categoryInput" id="categoryInput" placeholder="Category Name">
                </div>
                <div class="mb-3">
-                    <div id="categoryFeedback" class="form-text alert alert-danger d-none" role="alert">feedback is null</div>
+                    <div id="categoryFeedback" class="form-text alert alert-danger d-none" role="alert">{{ messageCategory }}</div>
                </div>
           </div>
           <div class="modal-footer">
@@ -121,34 +121,103 @@
 
 
 <script>
+import * as bootstrap from 'bootstrap';
+
 export default {
   name: 'DataTable',
   props: ['houses', 'mounts', 'specs'],
   data () {
     return {
-        currency: null,
-       newHouses: { ...this.houses },
-       newMounts: { ...this.mounts },
-       newSpecs: { ...this.specs },
+       currency: '',
+       newHouses: [...this.houses ],
+       newMounts: [ ...this.mounts ],
+       newSpecs: [ ...this.specs ],
+       sortedByASC: true,
+       messageData: '',
+       messageCategory: '',
+       messageInfo: '',
     }
   },
   methods: {
-    housesSort(col) {
-        console.log(col);
-        console.log(this.newHouses);
+    housesSort(sortBy) {
+        if(this.sortedByASC) {
+            this.newHouses.sort( (a, b) => (a[sortBy] > b[sortBy]) ? -1 : 1 );
+            this.sortedByASC = false;
+        }
+        else {
+            this.newHouses.sort( (a, b) => (a[sortBy] < b[sortBy]) ? -1 : 1 );
+            this.sortedByASC = true;
+        }
     },
     housesSearch(e) {
-        console.log(e.target.value);
-    },
-    changeCurrency(e) {
-        console.log(e.target.value);
+        if(e.target.value !== '') {
+            const tempRecipes = this.newHouses.filter((item) => {
+              return item.spec
+                .toUpperCase()
+                .includes(e.target.value.toUpperCase())
+            });
+            this.newHouses = [ ...tempRecipes ];
+        }
+        else {
+            this.newHouses = [ ...this.houses ];
+        }
+
     },
     addData(e) {
         e.preventDefault();
-        console.log(e.target.dataMount.value);
+        const dataFeedback = document.getElementById('dataFeedback');
+        if(e.target.dataMount.value === 'false') {
+            dataFeedback.classList.remove('d-none');
+            this.messageData = 'Please choose a data mount';
+        }
+        else if(e.target.dataSpec.value === 'false') {
+            dataFeedback.classList.remove('d-none');
+            this.messageData = 'Please choose a data spec';
+        }
+        else if(e.target.dataPrice.value === '') {
+            dataFeedback.classList.remove('d-none');
+            this.messageData = 'Please specify a data price';
+        }
+        else {
+            dataFeedback.classList.add('d-none');
+            this.messageData = '';
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addDataModal'));
+            modal.hide();
+            let length = this.newHouses.length;
+            this.newHouses.push({
+                id: length+1,
+                mount: e.target.dataMount.value,
+                spec: e.target.dataSpec.value,
+                price: e.target.dataPrice.value
+            });
+        }
+
     },
     addCategory(e) {
         e.preventDefault();
+        const categoryFeedback = document.getElementById('categoryFeedback');
+        if(e.target.categoryType.value === 'false') {
+            categoryFeedback.classList.remove('d-none');
+            this.messageCategory = 'Please choose a category type';
+        }
+        else if(e.target.categoryInput.value === '') {
+            categoryFeedback.classList.remove('d-none');
+            this.messageCategory = 'Please type a category name';
+        }
+        else {
+            if(e.target.categoryType.value === 'mount') {
+                this.newMounts.push(e.target.categoryInput.value);
+            }
+            else if(e.target.categoryType.value === 'spec') {
+                this.newSpecs.push(e.target.categoryInput.value);
+            }
+            categoryFeedback.classList.add('d-none');
+            this.messageCategory = '';
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
+            modal.hide();
+        }
+    },
+    changeCurrency(e) {
         console.log(e.target.value);
     },
   }

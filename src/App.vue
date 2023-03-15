@@ -9,7 +9,9 @@
 <script>
     /* eslint-disable */
     import 'bootstrap/dist/css/bootstrap.css';
-    import 'bootstrap/dist/js/bootstrap.js';
+    //import 'bootstrap/dist/js/bootstrap.js';
+    //import * as bootstrap from 'bootstrap';
+
     import DataTable from './components/DataTable.vue'
 
     export default {
